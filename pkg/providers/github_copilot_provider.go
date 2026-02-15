@@ -16,7 +16,6 @@ type GitHubCopilotProvider struct {
 	client  *copilot.Client
 	session *copilot.Session
 
-	
 	mu sync.Mutex
 }
 
@@ -27,7 +26,7 @@ func NewGitHubCopilotProvider(uri string, connectMode string, model string) (*Gi
 
 	switch connectMode {
 	case "stdio":
-		// TODO: 
+		// TODO:
 		return nil, fmt.Errorf("stdio mode not implemented")
 	case "grpc":
 		client := copilot.NewClient(&copilot.ClientOptions{
@@ -36,7 +35,6 @@ func NewGitHubCopilotProvider(uri string, connectMode string, model string) (*Gi
 		if err := client.Start(context.Background()); err != nil {
 			return nil, fmt.Errorf("can't connect to Github Copilot: %w; see docs for details", err)
 		}
-
 
 		session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{
 			Model: model,
@@ -67,7 +65,6 @@ func (p *GitHubCopilotProvider) Close() {
 	}
 }
 
-
 func (p *GitHubCopilotProvider) Chat(ctx context.Context, messages []Message, tools []ToolDefinition, model string, options map[string]interface{}) (*LLMResponse, error) {
 	type tempMessage struct {
 		Role    string `json:"role"`
@@ -85,14 +82,12 @@ func (p *GitHubCopilotProvider) Chat(ctx context.Context, messages []Message, to
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-
 	resp, err := p.session.SendAndWait(ctx, copilot.MessageOptions{
 		Prompt: string(fullcontent),
 	})
 	if err != nil {
 		return nil, err
 	}
-
 
 	var content string
 	if resp != nil && resp.Data.Content != nil {
