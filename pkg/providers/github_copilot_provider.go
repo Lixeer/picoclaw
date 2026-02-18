@@ -33,7 +33,7 @@ func NewGitHubCopilotProvider(uri string, connectMode string, model string) (*Gi
 			CLIUrl: uri,
 		})
 		if err := client.Start(context.Background()); err != nil {
-			return nil, fmt.Errorf("can't connect to Github Copilot: %w; see docs for details", err)
+			return nil, fmt.Errorf("can't connect to Github Copilot: %w; `https://github.com/github/copilot-sdk/blob/main/docs/getting-started.md#connecting-to-an-external-cli-server` for details", err)
 		}
 
 		session, err := client.CreateSession(context.Background(), &copilot.SessionConfig{
@@ -58,6 +58,8 @@ func NewGitHubCopilotProvider(uri string, connectMode string, model string) (*Gi
 }
 
 func (p *GitHubCopilotProvider) Close() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	if p.client != nil {
 		p.client.Stop()
 		p.client = nil
@@ -78,7 +80,10 @@ func (p *GitHubCopilotProvider) Chat(ctx context.Context, messages []Message, to
 		})
 	}
 
-	fullcontent, _ := json.Marshal(out)
+	fullcontent, err := json.Marshal(out)
+	if err != nil {
+		return nil, fmt.Errorf("marshal messages: %w", err)
+	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
 

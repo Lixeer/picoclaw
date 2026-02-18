@@ -665,6 +665,10 @@ func gatewayCmd() {
 	<-sigChan
 
 	fmt.Println("\nShutting down...")
+
+	if cp, ok := provider.(providers.CloseableProvider); ok {
+		cp.Close()
+	}
 	cancel()
 	deviceService.Stop()
 	heartbeatService.Stop()
